@@ -87,9 +87,10 @@ Nguyên tắc phân quyền theo Mollick: **AI đề xuất và trích nguồn; 
 | Chỉ số | Baseline | Target | Nguồn | Owner | Khi chỉ số xấu |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Tỷ lệ evaluator chất lượng có ghi score | 0% (0/5 evaluator có score) | 100% evaluator hoạt động; citation accuracy ≥95% trên ≥50 trace/tuần | Langfuse RAG Quality + audit văn bản | Vũ Huy Hoàng | Kiểm tra cấu hình evaluator/dataset; không cho qua gate khi thiếu score chất lượng. |
+| Tỷ lệ trace thiếu bằng chứng (insufficient_evidence) | 1,1% (1/89 traces, snapshot 03/09/2026) | < 3% | Langfuse trace status trong cùng time window | Vũ Huy Hoàng | Phân tích intent và evidence; bổ sung tài liệu hoặc kích hoạt handoff thay vì để AI suy đoán. |
 | Answer rate (proxy cho self-service) | 31,8% | ≥60% ở Gate 60; ≥80% ở Gate 90 | Trace status + phản hồi người dùng | Tạ Thị Nga | Phân nhóm intent thất bại, bổ sung tài liệu hoặc chuyển cán bộ. |
-| P95 end-to-end latency | 10,0s | ≤5,0s | Langfuse traces/observations | Vũ Huy Hoàng | Tối ưu evidence/fallback, cache và timeout; không ưu tiên model khi generation không phải nút thắt. |
 | Tỷ lệ trace thiếu bằng chứng tạo handoff | 0% (0/1 trace `insufficient_evidence` hiển thị ticket/owner) | ≥95% có owner trong 5 phút; ≥90% xử lý ≤24h | Ticket log liên kết trace ID | Tạ Thị Nga | Kiểm tra routing, lịch trực và cảnh báo quá hạn. |
+| P95 end-to-end latency | 10,0s | ≤5,0s | Langfuse traces/observations | Vũ Huy Hoàng | Tối ưu evidence/fallback, cache và timeout; không ưu tiên model khi generation không phải nút thắt. |
 | Chi phí LLM trung bình mỗi request | $0.0107/request | ≤$0.010/request sau khi đạt quality gate | Dashboard cost/tokens theo cùng time window | Trần Hoài Nam | Phân tích cost per answered request, giảm retry và cache truy vấn lặp lại nhưng không cắt giảm bước kiểm chứng. |
 
 `Answer rate` chỉ là proxy; “tự giải quyết thành công” chỉ được xác nhận khi có phản hồi người dùng hoặc khi nghiệp vụ hoàn tất mà không phát sinh handoff/tin nhắn hỏi lại.
