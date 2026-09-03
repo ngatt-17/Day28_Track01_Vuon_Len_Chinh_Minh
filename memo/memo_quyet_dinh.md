@@ -1,90 +1,108 @@
-# MEMO QUYẾT ĐỊNH ÁP DỤNG AI (DECISION MEMO)
-**Dự án:** Internova AI Platform — Trợ lý tra cứu thông tin thực tập sinh viên  
-**Nhóm thực hiện:** Vươn Lên Chính Mình (Track 01)  
-**Ngày lập:** 03/09/2026  
-**Phiên bản:** v2.0 (Sau phản biện chéo)
+# MEMO QUYẾT ĐỊNH ÁP DỤNG AI
+
+**Dự án:** Internova AI Platform — chatbot RAG tra cứu thông tin thực tập
+
+**Nhóm:** Vươn Lên Chính Mình — Track 01
+
+**Ngày lập:** 03/09/2026
+
+**Phiên bản:** v2.1 — sau phản biện và đối chiếu telemetry
 
 ---
 
-## 1. Vấn đề thực tế và Nguyên nhân gốc (Problem & Root Causes)
+## Tóm tắt dành cho người ra quyết định
 
-### 1.1. Triệu chứng quan sát được (Symptoms)
-Hệ thống **Internova AI Platform** đã xây dựng hoàn thiện tính năng AI Chatbot tra cứu thông tin thực tập và tích hợp Knowledge Base. Tuy nhiên, trong các đợt dùng thử ban đầu:
-- Sinh viên chỉ thử hỏi 1–2 câu rồi nhanh chóng quay lại thói quen cũ: nhắn tin trực tiếp qua Zalo/Email cho Cán bộ quản lý thực tập hoặc hỏi bạn bè.
-- Cán bộ quản lý thực tập tiếp tục bị quá tải bởi hàng trăm tin nhắn lặp lại về cùng một nội dung (thời hạn nộp, điều kiện tín chỉ, mẫu đơn...).
-
-### 1.2. Chẩn đoán 02 Nguyên nhân gốc thực sự (Root Causes)
-1. **Nguyên nhân 1 — Thiếu kiến trúc độ tin cậy và nguồn kiểm chứng (Trust Architecture Gap):**  
-   Câu trả lời của AI trước đây trả về dạng văn bản tự do, không dẫn link trích dẫn điều khoản cụ thể trong Sổ tay thực tập và không ghi rõ ngày cập nhật tài liệu. Sinh viên sợ AI bị "ảo giác" (hallucination) dẫn đến làm sai quy định và bị trượt học phần thực tập.
-2. **Nguyên nhân 2 — Thiếu cơ chế bàn giao và xử lý ngoại lệ trong quy trình (Handoff & Exception Handling Gap):**  
-   Quy trình cũ chỉ chèn AI vào một cách cơ học mà không định nghĩa: Khi AI gặp câu hỏi phức tạp hoặc trường hợp đặc thù (thực tập tại doanh nghiệp ngoài danh sách liên kết, thực tập sớm...), sinh viên cần làm gì tiếp theo. Thiếu nút kết nối trực tiếp với cán bộ phụ trách khiến sinh viên mất niềm tin và bỏ qua chatbot.
+Internova đã có nền tảng kỹ thuật cần thiết cho một pilot RAG: Knowledge Base, hybrid retrieval, trace theo từng stage và dashboard theo dõi latency/chi phí. Tuy nhiên, bằng chứng hiện tại mới chứng minh hệ thống **chạy được**, chưa chứng minh hệ thống **trả lời đáng tin và làm thay đổi workflow**. Khuyến nghị của nhóm là tiếp tục đầu tư trong phạm vi pilot, nhưng khóa việc mở rộng bằng ba điều kiện: evaluator phải sinh score, handoff phải có owner/SLA và các chỉ số workflow phải cải thiện trên cùng một định nghĩa dữ liệu.
 
 ---
 
-## 2. Framework chẩn đoán đã sử dụng và Bằng chứng thực tế
+## 1. Vấn đề và nguyên nhân gốc
 
-Nhóm đã sử dụng phối hợp 3 công cụ chẩn đoán chuyên sâu:
+Snapshot vận hành ngày 03/09/2026 cho thấy hệ thống không ghi nhận lỗi dịch vụ (`error rate = 0%`) nhưng chỉ đạt `Answer rate = 31,8%`; một trace có trạng thái `insufficient_evidence`. Đồng thời các evaluator Retrieval success, Groundedness, RAG confidence, Faithfulness và Answer relevance chưa ghi score. Vì vậy vấn đề không còn là “chatbot có chạy hay không”, mà là **có đủ bằng chứng để tin và hoàn tất quy trình hay không**.
 
-| Framework | Trục chẩn đoán | Phát hiện chính | Kết luận hành động |
-| :--- | :--- | :--- | :--- |
-| **Gartner-Lite** | *Direction — Readiness — Absorption* | - Hướng đi: ĐẠT (Mục tiêu giảm tải và nâng cao tự phục vụ rõ ràng).<br>- Readiness: THIẾU (Chưa có quy trình kiểm duyệt dữ liệu định kỳ).<br>- Absorption: THIẾU (Chưa có cơ chế học từ lỗi phản hồi). | Tập trung chuẩn hóa Knowledge Base và quy trình vận hành trước khi mở rộng quy mô lớn. |
-| **Mollick** | *Phân chia công việc Người — AI* | - AI hỗ trợ: Tự động tra cứu, tóm tắt điều khoản và trích dẫn văn bản gốc.<br>- Sinh viên: Đối chiếu nguồn trích dẫn, tự quyết định và chịu trách nhiệm nộp hồ sơ.<br>- Cán bộ quản trị: Phê duyệt hồ sơ chính thức và xử lý ngoại lệ. | Không để AI tự động quyết định thay người; định rõ trách nhiệm từng bên. |
-| **ADKAR** | *Điểm nghẽn tâm lý người dùng* | - Awareness: Đạt (Sinh viên biết công cụ).<br>- **Desire (NGHẼN NẶNG NHẤT):** Sinh viên sợ sai quy chế nên không dám tin dùng.<br>- Knowledge/Ability: Cần hướng dẫn cách đọc nguồn kiểm chứng. | Không giải quyết bằng việc "mở lớp đào tạo sử dụng", mà phải giải quyết bằng **cung cấp nguồn kiểm chứng minh bạch**. |
+Hai nguyên nhân gốc:
 
-### Bằng chứng thực tế (Evidence):
-- **Dữ liệu kiểm tra thực tế (User Testing):** Thử nghiệm với 5 sinh viên VinUni chuẩn bị thực tập kỳ Thu 2026 cho thấy 4/5 sinh viên ($80\%$) không sử dụng thông tin của bot để điền biểu mẫu vì không thấy trích dẫn văn bản chính thức của trường.
-- **Log hệ thống:** $65\%$ các câu hỏi sinh viên bỏ dở là những câu hỏi mang tính đặc thù mà AI trả lời chung chung nhưng không cung cấp kênh liên hệ hỗ trợ tiếp theo.
+1. **Quality governance chưa hoàn chỉnh:** có RAG index, trace và các stage pipeline nhưng chưa có score để chứng minh nguồn truy xuất đúng, câu trả lời bám nguồn và phù hợp câu hỏi.
+2. **Fallback/handoff chưa đo được:** các yêu cầu thiếu bằng chứng đã được nhận diện, nhưng chưa có dữ liệu chứng minh chúng được chuyển đúng cán bộ, có owner và được xử lý trong SLA.
 
 ---
 
-## 3. Ít nhất 02 Thay đổi cụ thể sau phản biện chéo (Peer Review Changes)
+## 2. Framework và bằng chứng
 
-Sau khi nhận góp ý phản biện từ **Nhóm 05** tại Chặng 3, nhóm đã nâng cấp toàn diện bản thiết kế từ v1 lên v2:
-
-1. **Thay đổi 1 — Bổ sung chỉ số đo lường chất lượng lỗi và nút "Báo cáo thông tin sai lệch":**
-   - *Ở bản v1:* Nhóm chỉ đo "Tỷ lệ câu trả lời có trích nguồn".
-   - *Nâng cấp ở bản v2:* Bổ sung chỉ số **Tỷ lệ báo lỗi thông tin sai lệch (Error/Hallucination Report Rate)** với mục tiêu $< 3\%$. Tích hợp ngay nút bấm *"Báo cáo câu trả lời sai"* dưới từng phản hồi của AI để sinh viên phản ánh tức thì.
-2. **Thay đổi 2 — Thiết lập quy định cam kết thời gian xử lý (SLA 24h) và cơ chế khóa tạm dữ liệu nghi vấn:**
-   - *Ở bản v1:* Cột hành động khi chỉ số xấu chỉ ghi chung chung "kiểm tra lại dữ liệu".
-   - *Nâng cấp ở bản v2:* Quy định rõ khi một câu hỏi bị báo sai từ 2 lần trở lên:
-     + Hệ thống tự động chuyển câu hỏi cho Cán bộ quản lý thực tập xử lý.
-     + Tạm ẩn câu trả lời tự động cho câu hỏi đó cho đến khi Admin kiểm duyệt lại trong vòng **24 giờ**.
-3. **Thay đổi 3 (Bổ sung):** Bổ sung điều kiện kiểm tra quyền riêng tư dữ liệu sinh viên (Privacy Check) vào tiêu chí vượt cổng của Gate 60 ngày.
-
----
-
-## 4. Quyết định cuối cùng (Final Decision)
-
-> ### **QUYẾT ĐỊNH: TIẾP TỤC TRIỂN KHAI (GO)**
-> Triển khai giai đoạn Pilot chính thức (Gate 0–30 ngày) cho 1 khoa thử nghiệm (Khoa Viện Khoa học & Giáo dục Khai phóng - VinUni) trước khi mở rộng toàn trường.
-
----
-
-## 5. Lý do, Lộ trình bước tiếp theo & Phân công trách nhiệm (Next Steps & Owners)
-
-### 5.1. Lý do ra quyết định
-- Vấn đề quá tải tin nhắn tư vấn thực tập là bài toán cấp thiết của nhà trường.
-- Giải pháp mới đã tháo gỡ đúng 2 nguyên nhân gốc: **minh bạch nguồn kiểm chứng** và **quy trình chuyển tiếp cán bộ rõ ràng**.
-- Đội ngũ kỹ thuật và vận hành đã có đủ công cụ đo lường và quy trình ứng phó rủi ro cụ thể.
-
-### 5.2. Lộ trình thực hiện 30–60–90 ngày
-* **Giai đoạn 0–30 ngày (Chứng minh kiểm soát & Dữ liệu sạch):**
-  - Cập nhật phiên bản RAG có trích dẫn văn bản chính thức và nút báo lỗi.
-  - Phân công cán bộ quản trị dữ liệu quy chế thực tập.
-  - Pilot trên nhóm 20 sinh viên đầu tiên.
-  - *Gate Criteria:* $100\%$ câu trả lời có trích dẫn nguồn; xác định được Data Owner.
-* **Giai đoạn 31–60 ngày (Chứng minh chất lượng & Giảm tải thực tế):**
-  - Mở rộng thử nghiệm cho 100 sinh viên thuộc 1 khoa.
-  - Vận hành quy trình hỗ trợ chuyển tiếp và cam kết SLA 24h.
-  - *Gate Criteria:* Tỷ lệ báo lỗi $< 3\%$; số tin nhắn hỏi thủ công gửi cán bộ giảm $\ge 40\%$.
-* **Giai đoạn 61–90 ngày (Nghiệm thu & Mở rộng toàn trường):**
-  - Đánh giá tổng kết các chỉ số giá trị nghiệp vụ.
-  - Họp Hội đồng Quản lý Thực tập để phê duyệt chuyển sang trạng thái Normalization (vận hành mặc định).
-  - *Gate Criteria:* Giảm $\ge 70\%$ thời gian xử lý thủ tục; Ban Quản lý thực tập ký duyệt nghiệm thu.
-
-### 5.3. Phân công trách nhiệm (Owners)
-| Thành viên | Vai trò | Trách nhiệm chính trong giai đoạn tiếp theo |
+| Framework | Phát hiện | Hành động |
 | :--- | :--- | :--- |
-| **Vũ Huy Hoàng** | Technical & AI Lead | Hoàn thiện tính năng trích dẫn nguồn chi tiết, tích hợp log báo lỗi và giám sát chỉ số kỹ thuật RAG. |
-| **Tạ Thị Nga** | User Experience & QA Lead | Biên soạn cẩm nang hướng dẫn sử dụng cho sinh viên, theo dõi khảo sát độ hài lòng và điều phối thử nghiệm 20 sinh viên. |
-| **Trần Hoài Nam** | Business & Operations Lead | Làm việc với Ban quản lý thực tập để chuẩn hóa tài liệu Knowledge Base, thiết lập quy trình SLA 24h và chuẩn bị báo cáo Gate 30. |
+| **Gartner-Lite** | Direction rõ; Readiness/Absorption còn thiếu evaluator, data owner và feedback loop. | Chưa rollout; hoàn thiện kiểm soát chất lượng và vận hành trong pilot. |
+| **Mollick** | AI phù hợp với tìm kiếm, trích nguồn và tóm tắt; quyết định ngoại lệ vẫn thuộc cán bộ. | Thiết kế handoff có trace ID, owner, SLA; không để AI suy đoán khi thiếu nguồn. |
+| **ADKAR** | Desire/Reinforcement là điểm nghẽn: người dùng cần thấy bằng chứng và thấy lỗi được xử lý. | Hiển thị citation, nút feedback và trạng thái xử lý ticket ngay trong workflow. |
+
+Bằng chứng telemetry:
+
+- **Dashboard:** 44 requests, 1 active user, latency trung bình 2,67s, P95 10,0s, P99 11,0s, answer rate 31,8%.
+- **RAG Quality:** tất cả score chất lượng quan trọng đang ở trạng thái “Chưa có score”.
+- **Pipeline:** `evidence = 8,36s` và `evidence_semantic_fallback = 6,17s`, cao hơn `generation = 1,76s`; evidence/fallback là ưu tiên tối ưu.
+- **Index:** 9 tài liệu active/published, 176 chunks; danh mục hiển thị 11 tài liệu, cần làm rõ 2 tài liệu chưa vào active build.
+- **Traces:** 89 traces, 0 error traces và có trạng thái `insufficient_evidence`. Chênh lệch 44 requests/89 traces cần được giải thích bằng time window, filter và định nghĩa metric trước khi báo cáo chính thức.
+
+Kết luận dữ liệu: **0% lỗi kỹ thuật không đồng nghĩa 0% hallucination hoặc 100% groundedness**.
+
+### Vì sao chưa dùng token và chi phí làm tiêu chí chính?
+
+Dashboard ghi nhận baseline `$0.0107/request`. Đây là chỉ số phụ để kiểm soát hiệu quả, chưa phải tiêu chí chất lượng chính vì chưa chuẩn hóa được cost per successful answer. Nhóm chỉ tối ưu chi phí sau khi quality gate đạt yêu cầu, tránh cắt giảm retrieval/evidence trong khi vấn đề chính vẫn là độ tin cậy.
+
+---
+
+## 3. Thay đổi sau phản biện
+
+Phản biện được tổng hợp theo ba trục:
+
+- **Vũ Huy Hoàng — 2A202601057:** tách service error khỏi lỗi chất lượng RAG; bổ sung evaluator và audit citation.
+- **Tạ Thị Nga — 2A202601125:** định nghĩa self-service bằng dữ liệu workflow, bổ sung feedback/handoff thay cho chỉ đếm số câu hỏi.
+- **Trần Hoài Nam — 2A202601751:** biến lộ trình 30–60–90 thành các gate bằng chứng có owner và điều kiện dừng/sửa/tiếp tục.
+
+Các thay đổi đã đưa vào v2:
+
+1. Thay baseline ước tính bằng số telemetry thật hoặc proxy có tử số/mẫu số rõ: evaluator coverage `0/5`, insufficient evidence `1/89`, handoff `0/1` và chi phí `$0.0107/request`.
+2. Bổ sung bộ score Retrieval/Groundedness/Faithfulness/Answer relevance, audit citation và phân biệt lỗi nội dung với lỗi dịch vụ.
+3. Bổ sung KPI latency P95, handoff/SLA và hành động cụ thể khi chỉ số xấu; ưu tiên xử lý stage evidence/fallback.
+
+---
+
+## 4. Quyết định
+
+> **TIẾP TỤC PILOT CÓ ĐIỀU KIỆN (CONDITIONAL GO / ADJUST); CHƯA MỞ RỘNG TOÀN TRƯỜNG.**
+
+Hệ thống có nền tảng vận hành và quan sát tốt, nhưng chưa đủ bằng chứng về chất lượng câu trả lời. Mở rộng ngay khi evaluator chưa hoạt động và Answer rate còn 31,8% sẽ làm tăng quy mô của rủi ro thay vì chứng minh adoption.
+
+---
+
+## 5. Bước tiếp theo, gate và owner
+
+| Giai đoạn | Việc chính | Điều kiện qua gate | Owner |
+| :--- | :--- | :--- | :--- |
+| **0–30 ngày: chứng minh đo được** | Kích hoạt evaluator; chuẩn hóa 11 tài liệu và active build; gắn feedback/handoff với trace ID; thống nhất request/trace. | Có score trên ≥50 trace mẫu; 100% tài liệu active có owner/phiên bản; xác định được nguyên nhân chênh 44/89; P95 ≤8s. | Vũ Huy Hoàng |
+| **31–60 ngày: chứng minh chất lượng** | Pilot một nhóm sinh viên; audit citation hằng tuần; vận hành ticket/SLA; tối ưu evidence/fallback. | Citation đúng/còn hiệu lực ≥95%; Answer rate ≥60%; ≥90% ticket xử lý ≤24h; P95 ≤5s. | Tạ Thị Nga |
+| **61–90 ngày: chứng minh giá trị** | Đánh giá self-service, chi phí trên request thành công và tải hỗ trợ; họp quyết định mở rộng. | Answer rate ≥80%; cost ≤$0.010/request sau khi quality gate đạt; không có sự cố nghiêm trọng chưa xử lý; owner nghiệp vụ phê duyệt. | Trần Hoài Nam |
+
+Nếu bất kỳ gate nào không đạt, nhóm giữ nguyên phạm vi pilot, phân tích intent/document/chunk gây lỗi và chạy lại đánh giá sau khi sửa. Không chuyển giai đoạn chỉ vì đã hết 30, 60 hoặc 90 ngày.
+
+### Rủi ro và cơ chế kiểm soát
+
+| Rủi ro | Dấu hiệu cảnh báo | Kiểm soát | Owner |
+| :--- | :--- | :--- | :--- |
+| Nguồn hết hiệu lực hoặc trích dẫn sai | Citation accuracy <95%; nhiều feedback cùng document | Version tài liệu, data owner, audit 50 trace/tuần; tạm ẩn chủ đề và re-index | Vũ Huy Hoàng |
+| Hallucination dù dịch vụ không báo lỗi | Service error = 0% nhưng groundedness/faithfulness thấp | Evaluator độc lập, bộ câu hỏi chuẩn và regression test trước khi publish build | Vũ Huy Hoàng |
+| Ngoại lệ không đến đúng cán bộ | Ticket thiếu owner hoặc quá SLA | Routing theo intent, cảnh báo quá hạn và lịch trực dự phòng | Tạ Thị Nga |
+| Lộ dữ liệu cá nhân trong prompt/log | Trace chứa trường dữ liệu không cần thiết | Data minimization, phân quyền log, masking và thời hạn lưu dữ liệu | Trần Hoài Nam |
+| Latency làm người dùng bỏ cuộc | P95 >5s; evidence/fallback chiếm phần lớn thời gian | Cache nguồn ổn định, timeout/fallback có kiểm soát và tối ưu evidence stage | Vũ Huy Hoàng |
+
+### Tiêu chuẩn một câu trả lời đạt
+
+Một câu trả lời chỉ được tính là thành công khi đồng thời: đúng intent; có evidence đủ ngưỡng; trích đúng tài liệu còn hiệu lực; không mâu thuẫn với nguồn; trả lời đúng câu hỏi; hoàn thành trong ngưỡng latency; và không phát sinh phản hồi sai hoặc handoff do thiếu thông tin. Tiêu chuẩn này ngăn nhóm tối ưu riêng Answer rate bằng cách trả lời nhiều nhưng thiếu căn cứ.
+
+### Phân công trách nhiệm
+
+| Thành viên | Vai trò | Trách nhiệm |
+| :--- | :--- | :--- |
+| **Vũ Huy Hoàng** | AI/RAG & Observability Lead | Evaluator, citation audit, index/version, latency và chất lượng pipeline. |
+| **Tạ Thị Nga** | Workflow & User Feedback Lead | ADKAR, UX feedback, định nghĩa self-service, handoff và SLA. |
+| **Trần Hoài Nam** | Business & Decision Lead | Baseline nghiệp vụ, Gartner-Lite, gate 30–60–90 và quyết định mở rộng. |
